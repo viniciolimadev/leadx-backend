@@ -78,14 +78,26 @@ A API estará disponível em `http://localhost:8080`.
 | `make logs` | Exibe logs dos containers |
 | `make test` | Roda os testes |
 
+## Roles
+
+Os perfis de acesso são gerenciados pela tabela `role` no banco de dados.
+
+| Name | Symfony Role | Descrição |
+|---|---|---|
+| `admin` | `ROLE_ADMIN` | Acesso total |
+| `manager` | `ROLE_MANAGER` | Gestão de equipes |
+| `seller` | `ROLE_SELLER` | Operações de venda |
+
+As roles são populadas automaticamente via migration. Todo usuário recebe `ROLE_USER` por padrão, independente do perfil atribuído.
+
 ## Endpoints
 
 ### Autenticação
 
 | Método | Endpoint | Descrição | Auth |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | Cadastrar usuário | Não |
-| `POST` | `/api/auth/login` | Login (retorna JWT) | Não |
+| `POST` | `/api/auth/register` | Cadastrar usuário (role padrão: seller) | Não |
+| `POST` | `/api/auth/login` | Login — retorna token JWT | Não |
 
 ### Usuário
 
@@ -115,10 +127,9 @@ curl http://localhost:8080/api/me \
   -H "Authorization: Bearer <seu_token_jwt>"
 ```
 
-## Criar nova migration após alterar entidades
+## Migrations
 
 ```bash
-make migrations   # gera o arquivo de migration
-make migrate      # aplica no banco
+make migrations   # gera migration a partir das mudanças nas entidades
+make migrate      # aplica as migrations pendentes no banco
 ```
-

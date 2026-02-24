@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\RoleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,6 +24,7 @@ class AuthController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
+        RoleRepository $roleRepository,
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -34,16 +36,18 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Email already in use.'], Response::HTTP_CONFLICT);
         }
 
+        $role = $roleRepository->findByName('seller');
+
         $user = new User();
         $user->setEmail($data['email']);
         $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
-        $user->setRoles(['ROLE_USER']);
+        $user->setRoles($role);
 
         $em->persist($user);
         $em->flush();
 
         return $this->json([
-            'id' => $user->getId(),
+            'id'    => $user->getId(),
             'email' => $user->getEmail(),
         ], Response::HTTP_CREATED);
     }

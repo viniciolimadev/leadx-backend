@@ -82,7 +82,7 @@ A API estará disponível em `http://localhost:8080`.
 
 Os perfis de acesso são gerenciados pela tabela `role` no banco de dados.
 
-| Name | Symfony Role | Descrição |
+| Name |  Role | Descrição |
 |---|---|---|
 | `admin` | `ROLE_ADMIN` | Acesso total |
 | `manager` | `ROLE_MANAGER` | Gestão de equipes |

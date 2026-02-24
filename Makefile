@@ -1,4 +1,4 @@
-.PHONY: help start stop restart build shell console composer migrate migrations jwt-keys test logs ps
+.PHONY: help start stop restart build shell console composer migrate migrations jwt-keys test test-setup coverage logs ps
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
@@ -45,8 +45,15 @@ jwt-keys: ## Regenerate JWT keys
 cache-clear: ## Clear Symfony cache
 	docker compose exec php php bin/console cache:clear
 
+test-setup: ## Create test database and apply migrations (run once)
+	docker compose exec -e DATABASE_URL="postgresql://leadx:leadx_password@postgres:5432/leadx_test?serverVersion=16&charset=utf8" php php bin/console doctrine:database:create --env=test --if-not-exists --no-interaction
+	docker compose exec -e DATABASE_URL="postgresql://leadx:leadx_password@postgres:5432/leadx_test?serverVersion=16&charset=utf8" php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
 test: ## Run PHPUnit tests
-	docker compose exec php php bin/phpunit
+	docker compose exec php php vendor/bin/phpunit --configuration phpunit.xml.dist
+
+coverage: ## Run tests with coverage report (HTML in coverage/html/)
+	docker compose exec php php vendor/bin/phpunit --configuration phpunit.xml.dist --coverage-html coverage/html
 
 logs: ## Show container logs
 	docker compose logs -f

@@ -4,7 +4,7 @@ API REST em Symfony 7 com PHP 8.3, PostgreSQL, JWT e Docker.
 
 ## Stack
 
-- **PHP** 8.3 (FPM Alpine)
+- **PHP** 8.3 (FPM Alpine) + **Xdebug** 3.5 (coverage)
 - **Symfony** 7.2
 - **PostgreSQL** 16
 - **Nginx** 1.27
@@ -76,7 +76,9 @@ A API estará disponível em `http://localhost:8080`.
 | `make composer CMD="..."` | Roda comando Composer |
 | `make jwt-keys` | Regenera as chaves JWT |
 | `make logs` | Exibe logs dos containers |
+| `make test-setup` | Cria o banco de testes (rodar uma vez) |
 | `make test` | Roda os testes |
+| `make coverage` | Roda os testes com relatório de cobertura |
 
 ## Roles
 
@@ -133,3 +135,38 @@ curl http://localhost:8080/api/me \
 make migrations   # gera migration a partir das mudanças nas entidades
 make migrate      # aplica as migrations pendentes no banco
 ```
+
+## Testes
+
+### Estrutura
+
+```
+tests/
+├── Unit/
+│   └── Entity/
+│       ├── RoleTest.php   # toSymfonyRole, getName
+│       └── UserTest.php   # getRoles, addRole, removeRole, setRoles
+└── Feature/
+    ├── Auth/
+    │   ├── RegisterTest.php   # POST /api/auth/register
+    │   └── LoginTest.php      # POST /api/auth/login
+    └── Api/
+        └── MeTest.php         # GET /api/me
+```
+
+### Executando
+
+```bash
+# Apenas uma vez: cria o banco leadx_test e aplica as migrations
+make test-setup
+
+# Roda todos os testes (unitários + funcionais)
+make test
+
+# Roda os testes com relatório de cobertura HTML em coverage/html/
+make coverage
+```
+
+### Cobertura
+
+O relatório HTML é gerado em `coverage/html/` (ignorado pelo git). A cobertura é calculada via **Xdebug** no modo `coverage` — sem overhead de step-debug.

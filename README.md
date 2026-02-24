@@ -11,6 +11,32 @@ API REST em Symfony 7 com PHP 8.3, PostgreSQL, JWT e Docker.
 - **JWT** via `lexik/jwt-authentication-bundle`
 - **CORS** via `nelmio/cors-bundle`
 
+```
+┌─────────────────────────────────────────────┐
+│                  Client                      │
+└────────────────────┬────────────────────────┘
+                     │ HTTP :8080
+┌────────────────────▼────────────────────────┐
+│              Nginx 1.27                      │  proxy reverso + arquivos estáticos
+└────────────────────┬────────────────────────┘
+                     │ FastCGI :9000
+┌────────────────────▼────────────────────────┐
+│            PHP 8.3-FPM                       │
+│  ┌──────────────────────────────────────┐   │
+│  │           Symfony 7.2                │   │  framework + DI + routing
+│  │  ┌────────────┐  ┌────────────────┐  │   │
+│  │  │  Security  │  │  Controllers   │  │   │  JWT auth + CORS
+│  │  │  JWT/CORS  │  │  (business)    │  │   │
+│  │  └────────────┘  └───────┬────────┘  │   │
+│  │           Doctrine ORM   │           │   │  abstração do banco
+│  └──────────────────────────┼───────────┘   │
+└─────────────────────────────┼───────────────┘
+                              │ SQL
+┌─────────────────────────────▼───────────────┐
+│            PostgreSQL 16                     │  dados persistentes
+└─────────────────────────────────────────────┘
+```
+
 ## Requisitos
 
 - Docker e Docker Compose
@@ -95,3 +121,4 @@ curl http://localhost:8080/api/me \
 make migrations   # gera o arquivo de migration
 make migrate      # aplica no banco
 ```
+

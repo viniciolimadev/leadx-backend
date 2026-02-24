@@ -1,0 +1,5 @@
+_auth:
+    resource: routes/auth.yaml
+
+_api:
+    resource: routes/api.yaml

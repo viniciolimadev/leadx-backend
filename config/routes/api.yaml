@@ -1,0 +1,4 @@
+api_me:
+    path: /api/me
+    controller: App\Controller\Api\UserController::me
+    methods: [GET]

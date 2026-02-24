@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -20,11 +22,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    #[ORM\Column]
-    private array $roles = [];
+    #[ORM\ManyToMany(targetEntity: Role::class, fetch: 'EAGER')]
+    #[ORM\JoinTable(name: 'user_role')]
+    private Collection $userRoles;
 
     #[ORM\Column]
     private ?string $password = null;
+
+    public function __construct()
+    {
+        $this->userRoles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -47,17 +55,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
+    /**
+     * Retorna os roles no formato exigido pelo Symfony Security (ROLE_*).
+     * Sempre inclui ROLE_USER como mínimo.
+     */
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $roles = $this->userRoles
+            ->map(fn(Role $role) => $role->toSymfonyRole())
+            ->toArray();
+
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): static
+    public function setRoles(Role ...$roles): static
     {
-        $this->roles = $roles;
+        $this->userRoles = new ArrayCollection(array_values($roles));
         return $this;
+    }
+
+    public function addRole(Role $role): static
+    {
+        if (!$this->userRoles->contains($role)) {
+            $this->userRoles->add($role);
+        }
+        return $this;
+    }
+
+    public function removeRole(Role $role): static
+    {
+        $this->userRoles->removeElement($role);
+        return $this;
+    }
+
+    public function getUserRoles(): Collection
+    {
+        return $this->userRoles;
     }
 
     public function getPassword(): ?string
